@@ -122,7 +122,7 @@ AND name LIKE '%i%'
 AND name LIKE '%o%'
 AND name LIKE '%u%'
 
--- 1 SELECT_NOBEL_TUTORIAL
+-- 3 SELECT_NOBEL_TUTORIAL
 
 --Winners from 1950
 SELECT yr, subject, winner
@@ -185,7 +185,7 @@ SELECT winner, subject
  WHERE yr=1984
  ORDER BY subject IN ('Physics', 'Chemistry'), subject, winner
  
---SELECT within SELECT Tutorial
+-- 4 SELECT within SELECT Tutorial
 
 --Bigger than Russia
  SELECT name FROM world
@@ -257,3 +257,52 @@ WHERE population > ALL
    WHERE
      x.continent = y.continent
        AND x.name <> y.name);
+
+-- 5 SUM and COUNT
+
+-- Total world population
+SELECT SUM(population)
+FROM world
+
+-- List of continents
+SELECT DISTINCT continent
+FROM world
+
+-- GDP of Africa
+SELECT SUM(gdp)
+FROM world
+WHERE continent = 'africa'
+
+--Count the big countries
+SELECT COUNT(name)
+FROM world
+WHERE area >= 1000000
+
+-- Baltic states population
+SELECT SUM(population)
+FROM world
+WHERE name IN ('Estonia', 'Latvia', 'Lithuania')
+
+-- Counting the countries of each continent
+SELECT continent, COUNT(name)
+FROM world
+GROUP BY continent
+
+--Counting big countries in each continent
+SELECT continent, COUNT(name)
+FROM world
+WHERE population > 10000000
+GROUP BY continent
+
+--Counting big continents
+SELECT continent
+FROM world
+GROUP BY continent
+HAVING SUM(population) > 100000000
+
+-- 
+
+-- 6 The JOIN operation
+-- 
+SELECT matchid, player FROM goal 
+  WHERE teamid = 'GER'

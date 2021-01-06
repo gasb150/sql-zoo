@@ -547,3 +547,53 @@ CASE WHEN dept = 1 OR dept = 2
 END
 FROM teacher
 
+-- 8+ NSS Tutorial
+-- Check out one row
+SELECT A_STRONGLY_AGREE
+  FROM nss
+ WHERE question='Q01'
+   AND institution='Edinburgh Napier University'
+   AND subject='(8) Computer Science'
+
+-- Calculate how many agree or strongly agree
+SELECT institution, subject
+  FROM nss
+ WHERE score >= 100 AND question = 'Q15'
+
+ -- Unhappy Computer Students
+ SELECT institution, score
+  FROM nss
+ WHERE score < 50 AND question = 'Q15'AND subject = '(8) Computer Science' 
+ -- More Computing or Creative Students?
+ SELECT subject, SUM(response)
+  FROM nss
+ WHERE (subject='(8) Computer Science' OR subject = '(H) Creative Arts and Design')  AND question='Q22' 
+GROUP BY subject
+
+--Strongly Agree Numbers
+SELECT subject, SUM(response*A_STRONGLY_AGREE/100)
+  FROM nss
+ WHERE question='Q22'
+   AND (subject='(8) Computer Science' OR subject = '(H) Creative Arts and Design')
+GROUP BY subject
+
+-- Scores for Institutions in Manchester
+SELECT institution, ROUND((SUM(score*response))/SUM(response))
+  FROM nss
+ WHERE question='Q22'
+   AND (institution LIKE '%Manchester%')
+
+GROUP BY institution
+ORDER BY institution
+
+-- Number of Computing Students in Manchester
+SELECT institution, SUM(sample), 
+(SELECT sample 
+FROM nss x
+WHERE subject='(8) Computer Science'
+AND y.institution = x.institution
+AND question='Q01')
+FROM nss y
+WHERE question='Q01'
+AND (institution LIKE '%Manchester%')
+GROUP BY institution

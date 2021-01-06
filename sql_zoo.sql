@@ -302,6 +302,188 @@ HAVING SUM(population) > 100000000
 
 
 -- 6 The JOIN operation
--- 
+-- show the matchid and player name
 SELECT matchid, player FROM goal 
   WHERE teamid = 'GER'
+
+-- Know what teams were playing in match 1012
+SELECT id,stadium,team1,team2
+  FROM game
+ WHERE id = 1012
+
+-- show the player, teamid, stadium and mdate for every German goal.
+ SELECT player,teamid,stadium,mdate
+  FROM game 
+  JOIN goal 
+  ON (id=matchid)
+  WHERE teamid = 'GER'
+
+-- Show the team1, team2 and player for every goal scored by a player 
+ SELECT team1, team2, player
+FROM game
+JOIN goal
+ON (id=matchid)
+WHERE player LIKE 'Mario%'
+
+--using the phrase goal JOIN eteam on teamid=id
+SELECT player, teamid, coach, gtime
+  FROM goal JOIN eteam ON teamid=id
+WHERE gtime <=10
+
+-- because id is a column name in bothyou must specify instead of just id
+SELECT mdate, teamname
+  FROM game JOIN eteam ON team1=eteam.id
+WHERE   'Fernando Santos'= coach
+
+--  player for every goal scored in a game where the stadium 
+SELECT player
+FROM goal JOIN game ON (goal.matchid = game.id)
+WHERE stadium = 'National Stadium, Warsaw'
+
+-- show the name of all players who scored a goal against Germany.
+SELECT DISTINCT player
+  FROM game JOIN goal ON matchid = id 
+    WHERE (team1='Ger' or team2='Ger') AND teamid != 'GER'
+
+-- Show teamname and the total number of goals scored.
+SELECT teamname, COUNT(gtime)
+  FROM eteam JOIN goal ON id=teamid
+GROUP BY teamname
+ ORDER BY teamname
+
+ -- Show the stadium and the number of goals scored in each stadium.
+ SELECT stadium, COUNT(gtime)
+  FROM game JOIN goal ON id=matchid
+GROUP BY stadium
+ ORDER BY stadium
+
+-- For every match involving 'POL', show the matchid, date and the number of goals scored.
+SELECT matchid,mdate, COUNT(teamid)
+  FROM game JOIN goal ON matchid = id 
+ WHERE (team1 = 'POL' OR team2 = 'POL')
+GROUP BY  matchid, mdate
+
+-- For every match where 'GER' scored, show matchid, match date and the number of goals scored by 'GER'
+SELECT matchid, mdate, COUNT(teamid)
+FROM goal JOIN game ON matchid = id
+WHERE teamid = 'GER'
+GROUP BY matchid, mdate
+
+-- List every match with the goals scored by each team as shown.
+
+SELECT mdate, team1,
+       SUM(CASE WHEN goal.teamid = game.team1 THEN 1 ELSE 0 END) AS score1,
+       game.team2,
+       SUM(CASE WHEN goal.teamid = game.team2 THEN 1 ELSE 0 END) AS score2
+ 
+  FROM game LEFT JOIN goal ON matchid = id
+GROUP by mdate, matchid, team1, team2
+
+-- 7 More JOIN operations
+
+-- 1962 movies
+SELECT id, title
+ FROM movie
+ WHERE yr=1962
+
+ -- When was Citizen Kane released?
+ SELECT yr
+ FROM movie
+ WHERE title = 'Citizen Kane'
+
+ --Star Trek movies
+ SELECT id, title, yr
+ FROM movie
+ WHERE title LIKE 'Star trek%'
+ORDER BY yr
+
+-- id for actor Glenn Close
+SELECT id
+FROM actor
+WHERE name = 'Glenn Close'
+
+-- id for Casablanca
+SELECT id
+FROM movie
+WHERE title = 'Casablanca'
+
+-- Cast list for Casablanca
+SELECT name
+FROM actor
+JOIN casting ON (actor.id = casting.actorid)
+WHERE movieid = 11768
+
+-- Alien cast list
+SELECT name
+FROM actor
+JOIN casting ON (actor.id = casting.actorid)
+JOIN movie ON (movie.id = casting.movieid)
+WHERE movie.title = 'Alien'
+
+-- Harrison Ford movies
+SELECT title 
+FROM movie
+JOIN casting ON (movie.id = casting.movieid)
+JOIN actor ON (casting.actorid = actor.id)
+WHERE actor.name = 'Harrison Ford'
+
+-- Harrison Ford as a supporting actor
+SELECT title 
+FROM movie
+JOIN casting ON (movie.id = casting.movieid)
+JOIN actor ON (casting.actorid = actor.id)
+WHERE actor.name = 'Harrison Ford' AND ord != 1
+
+-- Lead actors in 1962 movies
+SELECT title, name
+FROM movie
+JOIN casting ON (movie.id = casting.movieid)
+JOIN actor ON (casting.actorid = actor.id)
+WHERE ord = 1 AND yr = 1962
+
+-- Busy years for Rock Hudson
+SELECT yr,COUNT(title) FROM
+  movie JOIN casting ON movie.id=movieid
+        JOIN actor   ON actorid=actor.id
+WHERE name='Rock Hudson'
+GROUP BY yr
+HAVING COUNT(title) > 2
+
+-- Lead actor in Julie Andrews movies
+SELECT title, name FROM movie
+JOIN casting ON (casting.movieid= movie.id) AND casting.ord = 1
+JOIN actor ON (actor.id=casting.actorid)
+WHERE movie.id IN (
+SELECT movieid  FROM casting 
+WHERE actorid IN (
+  SELECT id FROM actor
+  WHERE name='Julie Andrews'))
+
+-- Actors with 15 leading roles
+SELECT name
+FROM actor
+JOIN casting ON (actor.id = casting.actorid)
+WHERE ord = 1
+GROUP BY name
+HAVING SUM(ord)>=15
+ORDER BY name
+
+-- Films released in the year 1978
+SELECT title, COUNT(actorid)
+FROM movie
+JOIN casting ON (movie.id = casting.movieid)
+WHERE yr = 1978
+GROUP BY title
+ORDER BY COUNT(actorid) DESC, title
+
+-- people who have worked with 'Art Garfunkel'. 
+JOIN casting ON (actor.id = casting.actorid)
+WHERE id IN (
+SELECT actorid 
+FROM casting
+WHERE movieid IN (
+SELECT movieid
+FROM casting
+WHERE actorid =( SELECT id
+FROM actor
+WHERE name = 'Art Garfunkel'))) AND name != 'Art Garfunkel'

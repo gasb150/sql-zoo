@@ -617,3 +617,29 @@ SELECT yr,party, votes,
   FROM ge
  WHERE constituency = 'S14000021'
 ORDER BY party,yr
+-- Edinburgh Constituency
+SELECT constituency, party, votes,
+ RANK() OVER (PARTITION BY constituency ORDER BY votes DESC)  as posn 
+  FROM ge
+ WHERE constituency BETWEEN 'S14000021' AND 'S14000026'
+   AND yr  = 2017
+
+ORDER BY posn, constituency
+
+--Winners Only
+
+SELECT constituency,party
+  FROM ge x
+ WHERE constituency BETWEEN 'S14000021' AND 'S14000026'
+   AND yr  = 2017 AND votes >= ALL (SELECT votes FROM ge y WHERE x.constituency = y.constituency AND y.yr = 2017) 
+ORDER BY constituency,votes DESC
+
+-- Scottish seats
+SELECT party, COUNT(votes)
+  FROM ge x
+ WHERE constituency LIKE 'S%'
+   AND yr  = 2017 AND votes >= ALL(SELECT votes FROM ge y  WHERE x.constituency = y. constituency AND y.yr = 2017)
+GROUP BY party
+ORDER BY party,votes DESC
+
+-- 9+ COVID 19 (Window LAG)

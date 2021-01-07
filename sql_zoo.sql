@@ -597,3 +597,23 @@ FROM nss y
 WHERE question='Q01'
 AND (institution LIKE '%Manchester%')
 GROUP BY institution
+
+-- 9- Window functions
+
+-- Warming up
+SELECT lastName, party, votes
+  FROM ge
+ WHERE constituency = 'S14000024' AND yr = 2017
+ORDER BY votes DESC
+--Who won?
+SELECT party, votes,
+       RANK() OVER (ORDER BY votes DESC) AS posn
+  FROM ge
+ WHERE constituency = 'S14000024' AND yr = 2017
+ORDER BY party
+-- PARTITION BY
+SELECT yr,party, votes,
+      RANK() OVER (PARTITION BY yr ORDER BY votes DESC) as posn
+  FROM ge
+ WHERE constituency = 'S14000021'
+ORDER BY party,yr
